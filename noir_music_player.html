@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#09090d">
+<title>NOIR — Music Player</title>
+<style>
+:root{--bg:#09090d;--panel:#15151c;--panel2:#20202a;--text:#f7f7fb;--muted:#9999a8;--accent:#d7a7ff;--accent2:#9b76d6;--line:#30303b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#332344 0%,#111018 38%,var(--bg) 75%);color:var(--text);font-family:Inter,Roboto,"Segoe UI",Arial,sans-serif;min-height:100vh}
+button,input{font:inherit}button{cursor:pointer}.app{max-width:760px;margin:auto;min-height:100vh;padding:env(safe-area-inset-top) 18px calc(100px + env(safe-area-inset-bottom))}
+header{height:68px;display:flex;align-items:center;justify-content:space-between}.brand{font-size:22px;font-weight:850;letter-spacing:4px}.brand span{color:var(--accent)}.round{border:1px solid var(--line);background:#ffffff0c;color:white;width:42px;height:42px;border-radius:50%;font-size:19px}
+h1{font-size:30px;line-height:1.1;margin:18px 0 7px}.sub{color:var(--muted);font-size:14px}.tabs{display:flex;gap:9px;margin:22px 0}.tab{border:1px solid var(--line);background:transparent;color:#c8c5d0;border-radius:30px;padding:10px 16px}.tab.active{background:var(--accent);border-color:var(--accent);color:#1a1022;font-weight:750}
+.panel{background:linear-gradient(145deg,#211d2b,#14141b 70%);border:1px solid #ffffff12;border-radius:23px;padding:18px;margin:14px 0;box-shadow:0 12px 35px #0003}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.section-head h2{font-size:18px;margin:0}.small{font-size:12px;color:var(--muted)}
+.action{border:0;background:var(--accent);color:#1c1225;padding:11px 15px;border-radius:13px;font-weight:750}.ghost{border:1px solid var(--line);background:#ffffff0a;color:#eee;padding:10px 13px;border-radius:12px}
+.search{width:100%;background:#0e0e14;border:1px solid var(--line);border-radius:14px;color:white;padding:14px 15px;outline:none}.search:focus,.url:focus{border-color:var(--accent)}
+.song-list{display:grid;gap:8px}.song{display:flex;align-items:center;gap:12px;padding:9px;border-radius:14px;background:#ffffff06;min-width:0}.song.active{background:#bd8bed20;outline:1px solid #bd8bed55}.cover{width:48px;height:48px;flex:0 0 48px;border-radius:12px;background:linear-gradient(135deg,#51376a,#d6a5c9 55%,#25243d);display:grid;place-items:center;font-size:22px}.song-info{min-width:0;flex:1}.song-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.song-meta{color:var(--muted);font-size:12px;margin-top:4px}.song button{border:0;background:transparent;color:#ddd;padding:8px;font-size:18px}
+.empty{padding:22px 12px;text-align:center;color:var(--muted);line-height:1.6}.online-row{display:flex;gap:8px;margin-top:10px}.url{min-width:0;flex:1;background:#0e0e14;border:1px solid var(--line);border-radius:12px;color:white;padding:12px}
+.now{display:grid;grid-template-columns:150px 1fr;gap:17px;align-items:center}.art{width:150px;aspect-ratio:1;border-radius:20px;background:linear-gradient(145deg,#37264f,#c28ac8 55%,#292b4d);display:grid;place-items:center;font-size:58px;box-shadow:0 15px 30px #0005}.now-title{font-size:19px;font-weight:800;overflow-wrap:anywhere}.now-artist{font-size:13px;color:var(--muted);margin-top:6px}
+.progress{margin:19px 0 7px}.progress input{width:100%;accent-color:var(--accent)}.times{display:flex;justify-content:space-between;color:var(--muted);font-size:11px}
+.controls{display:flex;align-items:center;justify-content:center;gap:22px;margin:13px 0 3px}.controls button{background:transparent;border:0;color:white;font-size:25px}.controls .play{width:58px;height:58px;border-radius:50%;background:var(--accent);color:#1c1225;font-size:24px}
+.extras{display:flex;justify-content:center;gap:22px;margin-top:13px}.extras button{border:0;background:transparent;color:var(--muted);font-size:17px}.extras button.on{color:var(--accent)}
+.notice{font-size:12px;color:var(--muted);line-height:1.5;margin-top:12px}.hidden{display:none!important}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(100%,760px);padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#111118ed;backdrop-filter:blur(18px);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);z-index:5}
+.nav{border:0;background:none;color:var(--muted);display:grid;gap:4px;justify-items:center;font-size:11px}.nav b{font-size:21px}.nav.active{color:var(--accent)}
+.toast{position:fixed;bottom:95px;left:50%;transform:translateX(-50%);background:#292331;border:1px solid #59436d;padding:10px 15px;border-radius:20px;font-size:13px;z-index:9;display:none}
+@media(max-width:430px){.now{grid-template-columns:112px 1fr;gap:13px}.art{width:112px;font-size:43px}.controls{gap:17px}.panel{padding:15px}.app{padding-left:14px;padding-right:14px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="brand">N<span>O</span>IR<span>.</span></div><button class="round" id="pickTop" aria-label="Tambah lagu">＋</button></header>
+<h1>Musikmu, caramu.</h1><div class="sub">Pemutar musik lokal & streaming dari tautan audio.</div>
+<div class="tabs">
+<button class="tab active" data-page="home">Beranda</button><button class="tab" data-page="library">Koleksi</button><button class="tab" data-page="online">Online</button>
+</div>
+<section id="page-home">
+<div class="panel">
+<div class="section-head"><h2>Putar dari HP</h2><span class="small" id="count">0 lagu</span></div>
+<button class="action" id="pickBtn">＋ Pilih file musik</button>
+<input id="fileInput" type="file" accept="audio/*,.mp3,.m4a,.wav,.flac,.ogg" multiple hidden>
+<p class="notice">Pilih file audio yang tersimpan di perangkatmu. Browser akan meminta izin akses file yang kamu pilih.</p>
+</div>
+<div class="panel">
+<div class="section-head"><h2>Baru diputar / koleksi</h2><button class="ghost" id="showAll">Lihat semua</button></div>
+<input class="search" id="search" placeholder="Cari lagu di koleksi..." autocomplete="off">
+<div class="song-list" id="songList"><div class="empty">Belum ada lagu.<br>Tambahkan file musik dari HP untuk mulai mendengarkan.</div></div>
+</div>
+</section>
+<section id="page-library" class="hidden">
+<div class="panel"><div class="section-head"><h2>Koleksi musik</h2><span class="small" id="favCount">0 favorit</span></div><div class="song-list" id="libraryList"><div class="empty">Koleksimu masih kosong.</div></div></div>
+</section>
+<section id="page-online" class="hidden">
+<div class="panel">
+<div class="section-head"><h2>Streaming online</h2><span class="small">URL audio langsung</span></div>
+<p class="notice">Tempel tautan langsung ke file audio atau stream radio yang memang mengizinkan pemutaran di browser (misalnya URL MP3/AAC/OGG atau stream radio). Tautan halaman YouTube/Spotify/Apple Music biasanya tidak bisa diputar di sini.</p>
+<input class="url" id="streamTitle" placeholder="Judul lagu / nama radio">
+<div class="online-row"><input class="url" id="streamUrl" type="url" placeholder="https://.../audio.mp3"><button class="action" id="playUrl">Putar</button></div>
+<p class="notice">Streaming memerlukan koneksi internet. Ketersediaan stream, hak akses, dan dukungan CORS ditentukan oleh penyedia tautan.</p>
+</div>
+<div class="panel"><h2 style="font-size:17px">Tentang streaming</h2><p class="notice">Aplikasi ini tidak menyediakan katalog lagu komersial atau mengunduh musik dari layanan berbayar. Gunakan tautan audio yang kamu miliki atau yang dibagikan secara legal oleh pemiliknya.</p></div>
+</section>
+<div class="panel">
+<div class="section-head"><h2>Sedang diputar</h2><span class="small" id="sourceLabel">Belum ada audio</span></div>
+<div class="now">
+<div class="art" id="mainArt">♫</div>
+<div><div class="now-title" id="trackTitle">Pilih sebuah lagu</div><div class="now-artist" id="trackArtist">NOIR Music Player</div></div>
+</div>
+<div class="progress"><input type="range" id="seek" min="0" max="1000" value="0"><div class="times"><span id="currentTime">0:00</span><span id="duration">0:00</span></div></div>
+<div class="controls">
+<button id="shuffle" title="Acak">⤨</button><button id="prev" title="Sebelumnya">⏮</button><button class="play" id="playPause" title="Putar">▶</button><button id="next" title="Berikutnya">⏭</button><button id="repeat" title="Ulangi">↻</button>
+</div>
+<div class="extras"><button id="favorite" title="Favorit">♡</button><button id="volumeBtn" title="Volume">🔊</button></div>
+</div>
+</div>
+<nav class="bottom">
+<button class="nav active" data-page="home"><b>⌂</b>Beranda</button>
+<button class="nav" data-page="library"><b>♫</b>Koleksi</button>
+<button class="nav" data-page="online"><b>◎</b>Online</button>
+<button class="nav" id="navAdd"><b>＋</b>Tambah</button>
+</nav>
+<div class="toast" id="toast"></div>
+<audio id="audio" preload="metadata"></audio>
+<script>
+const $=id=>document.getElementById(id);
+const audio=$('audio');
+let tracks=[], current=-1, shuffle=false, repeat=false, favorites=new Set(), objectUrls=[];
+function toast(msg){const t=$('toast');t.textContent=msg;t.style.display='block';clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.style.display='none',2400)}
+function fmt(s){if(!Number.isFinite(s)||s<0)return'0:00';return Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0')}
+function cleanName(name){return name.replace(/\.[^.]+$/,'').replace(/[_-]/g,' ')}
+function render(){
+ $('count').textContent=tracks.length+' lagu';$('favCount').textContent=favorites.size+' favorit';
+ const q=$('search').value.toLowerCase();
+ const list=tracks.map((t,i)=>({t,i})).filter(x=>x.t.title.toLowerCase().includes(q));
+ const html=list.map(({t,i})=>`<div class="song ${i===current?'active':''}"><div class="cover">♫</div><div class="song-info" data-play="${i}"><div class="song-title">${esc(t.title)}</div><div class="song-meta">${t.online?'Streaming online':'Di perangkat'}${favorites.has(t.id)?' · ♥':''}</div></div><button data-fav="${i}" aria-label="Favorit">${favorites.has(t.id)?'♥':'♡'}</button><button data-play="${i}" aria-label="Putar">▶</button></div>`).join('');
+ $('songList').innerHTML=html||'<div class="empty">Tidak ada lagu yang cocok.</div>';
+ const fav=tracks.map((t,i)=>({t,i})).filter(x=>favorites.has(x.t.id));
+ $('libraryList').innerHTML=fav.map(({t,i})=>`<div class="song"><div class="cover">♫</div><div class="song-info" data-play="${i}"><div class="song-title">${esc(t.title)}</div><div class="song-meta">${t.online?'Streaming online':'Di perangkat'}</div></div><button data-fav="${i}">♥</button><button data-play="${i}">▶</button></div>`).join('')||'<div class="empty">Belum ada lagu favorit. Tekan ♡ saat lagu diputar.</div>';
+ document.querySelectorAll('[data-play]').forEach(el=>el.addEventListener('click',()=>playIndex(+el.dataset.play)));
+ document.querySelectorAll('[data-fav]').forEach(el=>el.addEventListener('click',()=>toggleFav(+el.dataset.fav)));
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function updatePlayer(){
+ const t=tracks[current];if(!t)return;
+ $('trackTitle').textContent=t.title;$('trackArtist').textContent=t.online?'Streaming dari internet':'File lokal di perangkat';
+ $('sourceLabel').textContent=t.online?'ONLINE':'LOKAL';$('favorite').textContent=favorites.has(t.id)?'♥':'♡';$('favorite').classList.toggle('on',favorites.has(t.id));
+ $('mainArt').textContent=t.online?'🌐':'♫';$('playPause').textContent=audio.paused?'▶':'Ⅱ';render();
+ if('mediaSession'in navigator){navigator.mediaSession.metadata=new MediaMetadata({title:t.title,artist:t.online?'Streaming online':'NOIR Music',album:'NOIR'});navigator.mediaSession.setActionHandler('play',()=>audio.play());navigator.mediaSession.setActionHandler('pause',()=>audio.pause());navigator.mediaSession.setActionHandler('previoustrack',prev);navigator.mediaSession.setActionHandler('nexttrack',next)}
+}
+function playIndex(i){if(i<0||i>=tracks.length)return;current=i;audio.src=tracks[i].src;audio.play().then(updatePlayer).catch(()=>{updatePlayer();toast('Audio tidak dapat diputar. Periksa format atau tautannya.')});updatePlayer()}
+function prev(){if(!tracks.length)return;playIndex((current-1+tracks.length)%tracks.length)}
+function next(){if(!tracks.length)return;playIndex(shuffle?Math.floor(Math.random()*tracks.length):(current+1)%tracks.length)}
+function toggleFav(i=current){if(i<0||!tracks[i])return;const id=tracks[i].id;favorites.has(id)?favorites.delete(id):favorites.add(id);updatePlayer()}
+$('pickBtn').onclick=$('pickTop').onclick=$('navAdd').onclick=()=>$('fileInput').click();
+$('fileInput').addEventListener('change',e=>{const files=[...e.target.files];files.forEach(file=>{if(!file.type.startsWith('audio/')&&!/\.(mp3|m4a|wav|flac|ogg|aac)$/i.test(file.name))return;const src=URL.createObjectURL(file);objectUrls.push(src);tracks.push({id:'local-'+Math.random().toString(36).slice(2),title:cleanName(file.name),src,online:false})});render();if(files.length){toast(files.length+' file diproses');if(current<0&&tracks.length)playIndex(tracks.length-files.length)}e.target.value=''});
+$('playUrl').onclick=()=>{const url=$('streamUrl').value.trim();if(!/^https?:\/\//i.test(url)){toast('Masukkan URL audio yang valid (http/https).');return}const title=$('streamTitle').value.trim()||'Streaming online';tracks.push({id:'url-'+Date.now(),title,src:url,online:true});$('streamUrl').value='';$('streamTitle').value='';render();playIndex(tracks.length-1)};
+$('playPause').onclick=()=>{if(current<0){toast('Pilih lagu terlebih dahulu.');return}audio.paused?audio.play():audio.pause()};
+$('prev').onclick=prev;$('next').onclick=next;$('favorite').onclick=()=>toggleFav();
+$('shuffle').onclick=()=>{shuffle=!shuffle;$('shuffle').classList.toggle('on',shuffle);toast(shuffle?'Mode acak aktif':'Mode acak mati')};
+$('repeat').onclick=()=>{repeat=!repeat;$('repeat').classList.toggle('on',repeat);audio.loop=repeat;toast(repeat?'Ulangi lagu aktif':'Ulangi lagu mati')};
+$('search').addEventListener('input',render);
+$('showAll').onclick=()=>switchPage('library');
+audio.addEventListener('play',()=>$('playPause').textContent='Ⅱ');audio.addEventListener('pause',()=>$('playPause').textContent='▶');
+audio.addEventListener('timeupdate',()=>{if(audio.duration){$('seek').value=audio.currentTime/audio.duration*1000;$('currentTime').textContent=fmt(audio.currentTime);$('duration').textContent=fmt(audio.duration)}});
+$('seek').oninput=()=>{if(audio.duration)audio.currentTime=$('seek').value/1000*audio.duration};
+audio.addEventListener('ended',()=>{if(!repeat)next()});
+audio.addEventListener('error',()=>toast('Gagal memuat audio. Coba tautan audio langsung lainnya.'));
+$('volumeBtn').onclick=()=>{audio.muted=!audio.muted;$('volumeBtn').textContent=audio.muted?'🔇':'🔊'};
+function switchPage(page){['home','library','online'].forEach(p=>$('page-'+p).classList.toggle('hidden',p!==page));document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));}
+document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.page)));
+render();
+</script>
+</body>
+</html>
